@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.LinkedList;
 import java.util.List;
+import java.time.temporal.ChronoUnit;
 
 public class Employee {
 
@@ -91,16 +92,20 @@ public class Employee {
 	}
 	
 	public int getAnnualIncomeTax() {
-		
-		//Menghitung berapa lama pegawai bekerja dalam setahun ini, jika pegawai sudah bekerja dari tahun sebelumnya maka otomatis dianggap 12 bulan.
-		LocalDate date = LocalDate.now();
-		
-		if (date.getYear() == yearJoined) {
-			monthWorkingInYear = date.getMonthValue() - monthJoined;
-		}else {
-			monthWorkingInYear = 12;
-		}
-		
-		return TaxFunction.calculateTax(monthlySalary, otherMonthlyIncome, monthWorkingInYear, annualDeductible, spouseIdNumber.equals(""), childIdNumbers.size());
-	}
+	LocalDate now = LocalDate.now();
+	LocalDate joinDate = LocalDate.of(yearJoined, monthJoined, dayJoined);
+
+	monthWorkingInYear = (yearJoined == now.getYear())
+		? (int) ChronoUnit.MONTHS.between(joinDate.withDayOfMonth(1), now.withDayOfMonth(1))
+		: 12;
+
+	return TaxFunction.calculateTax(
+		monthlySalary,
+		otherMonthlyIncome,
+		monthWorkingInYear,
+		annualDeductible,
+		spouseIdNumber == null || spouseIdNumber.isEmpty(),
+		childIdNumbers.size()
+	);
+}
 }
